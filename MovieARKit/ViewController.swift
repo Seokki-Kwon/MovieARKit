@@ -12,6 +12,7 @@ import ARKit
 class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
+    @IBOutlet weak var addButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,6 +47,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.pause()
     }
 
+    @IBAction func addButtonTapped(_ sender: Any) {
+        let arAssetListVC = ARAssetListViewController()
+        self.present(arAssetListVC, animated: true)
+    }
     // MARK: - ARSCNViewDelegate
     
 /*
