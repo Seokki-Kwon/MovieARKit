@@ -15,6 +15,7 @@
 		47E0F05E2D2ABC5A00A4613F /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 47E0F05D2D2ABC5A00A4613F /* Base */; };
 		47E0F0652D2AC1AF00A4613F /* ARAssetListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E0F0642D2AC1AF00A4613F /* ARAssetListViewController.swift */; };
 		47E0F06F2D2AD64900A4613F /* AssetCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E0F06E2D2AD64900A4613F /* AssetCollectionViewCell.swift */; };
+		47E0F0712D2AD6D600A4613F /* AssetDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E0F0702D2AD6D600A4613F /* AssetDetailViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		47E0F05D2D2ABC5A00A4613F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		47E0F0642D2AC1AF00A4613F /* ARAssetListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARAssetListViewController.swift; sourceTree = "<group>"; };
 		47E0F06E2D2AD64900A4613F /* AssetCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetCollectionViewCell.swift; sourceTree = "<group>"; };
+		47E0F0702D2AD6D600A4613F /* AssetDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDetailViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +65,7 @@
 				47E0F0532D2ABC5700A4613F /* art.scnassets */,
 				47E0F0552D2ABC5700A4613F /* ViewController.swift */,
 				47E0F0642D2AC1AF00A4613F /* ARAssetListViewController.swift */,
+				47E0F0702D2AD6D600A4613F /* AssetDetailViewController.swift */,
 				47E0F06E2D2AD64900A4613F /* AssetCollectionViewCell.swift */,
 				47E0F0572D2ABC5700A4613F /* Main.storyboard */,
 				47E0F05A2D2ABC5A00A4613F /* Assets.xcassets */,
@@ -146,6 +149,7 @@
 				47E0F0562D2ABC5700A4613F /* ViewController.swift in Sources */,
 				47E0F0522D2ABC5700A4613F /* AppDelegate.swift in Sources */,
 				47E0F0652D2AC1AF00A4613F /* ARAssetListViewController.swift in Sources */,
+				47E0F0712D2AD6D600A4613F /* AssetDetailViewController.swift in Sources */,
 				47E0F06F2D2AD64900A4613F /* AssetCollectionViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

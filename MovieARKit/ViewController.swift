@@ -49,7 +49,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBAction func addButtonTapped(_ sender: Any) {
         let arAssetListVC = ARAssetListViewController()
-        self.present(arAssetListVC, animated: true)
+        let navVC = UINavigationController(rootViewController: arAssetListVC)
+        self.present(navVC, animated: true)
     }
     // MARK: - ARSCNViewDelegate
     

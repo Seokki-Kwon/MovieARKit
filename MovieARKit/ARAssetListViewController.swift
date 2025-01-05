@@ -27,7 +27,11 @@ class ARAssetListViewController: UIViewController, UICollectionViewDataSource, U
         collectionView.delegate = self
         collectionView.register(AssetCollectionViewCell.self, forCellWithReuseIdentifier: AssetCollectionViewCell.identifier)
         collectionView.register(HeaderReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
-        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.isNavigationBarHidden = true
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -59,8 +63,8 @@ class ARAssetListViewController: UIViewController, UICollectionViewDataSource, U
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let assetDatilVc = AssetDetailViewController()
-        self.present(assetDatilVc, animated: true)
+        let assetDatilVC = AssetDetailViewController()
+        self.navigationController?.pushViewController(assetDatilVC, animated: true)
     }
 }
 
