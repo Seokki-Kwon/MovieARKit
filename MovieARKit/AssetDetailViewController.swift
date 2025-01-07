@@ -11,8 +11,7 @@ class AssetDetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .systemBackground
-        self.navigationController?.isNavigationBarHidden = false
+        self.view.backgroundColor = .systemBackground        
         // Do any additional setup after loading the view.
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(addTapped))
     }

@@ -25,13 +25,10 @@ class ARAssetListViewController: UIViewController, UICollectionViewDataSource, U
         view.addSubview(collectionView)
         collectionView.dataSource = self
         collectionView.delegate = self
+        navigationItem.title = "Object"
+        navigationController?.navigationBar.prefersLargeTitles = true
         collectionView.register(AssetCollectionViewCell.self, forCellWithReuseIdentifier: AssetCollectionViewCell.identifier)
-        collectionView.register(HeaderReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.navigationController?.isNavigationBarHidden = true
+//        collectionView.register(HeaderReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")        
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -45,21 +42,21 @@ class ARAssetListViewController: UIViewController, UICollectionViewDataSource, U
         return cell
     }
     
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        switch kind {
-        case UICollectionView.elementKindSectionHeader:
-            guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? HeaderReusableView else {
-                fatalError("Failed to load Header!")
-            }
-            return header
-        default:
-            break
-        }
-        return UICollectionReusableView()
-    }
+//    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+//        switch kind {
+//        case UICollectionView.elementKindSectionHeader:
+//            guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? HeaderReusableView else {
+//                fatalError("Failed to load Header!")
+//            }
+//            return header
+//        default:
+//            break
+//        }
+//        return UICollectionReusableView()
+//    }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        return CGSize(width: 80, height: 80)
+        return CGSize(width: 40, height: 40)
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -68,25 +65,23 @@ class ARAssetListViewController: UIViewController, UICollectionViewDataSource, U
     }
 }
 
-class HeaderReusableView: UICollectionReusableView {
-    let label: UILabel = {
-        let label = UILabel(frame: .zero)
-        label.text = "Object"
-        label.font = UIFont.preferredFont(forTextStyle: .title1)
-        label.textColor = .white
-        return label
-    }()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        self.addSubview(label)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            label.centerYAnchor.constraint(equalTo: self.centerYAnchor)
-        ])
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
+//class HeaderReusableView: UICollectionReusableView {
+//    let label: UILabel = {
+//        let label = UILabel(frame: .zero)
+//        label.text = "Item Category"
+//        return label
+//    }()
+//    
+//    override init(frame: CGRect) {
+//        super.init(frame: frame)
+//        self.addSubview(label)
+//        label.translatesAutoresizingMaskIntoConstraints = false
+//        NSLayoutConstraint.activate([
+//            label.centerYAnchor.constraint(equalTo: self.centerYAnchor)
+//        ])
+//    }
+//    
+//    required init?(coder: NSCoder) {
+//        fatalError("init(coder:) has not been implemented")
+//    }
+//}
