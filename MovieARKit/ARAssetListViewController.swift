@@ -55,9 +55,9 @@ class ARAssetListViewController: UIViewController, UICollectionViewDataSource, U
 //        return UICollectionReusableView()
 //    }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        return CGSize(width: 40, height: 40)
-    }
+//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+//        return CGSize(width: 40, height: 40)
+//    }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let assetDatilVC = AssetDetailViewController()

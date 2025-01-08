@@ -37,6 +37,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let configuration = ARWorldTrackingConfiguration()
 
         // Run the view's session
+        
         sceneView.session.run(configuration)
     }
     
