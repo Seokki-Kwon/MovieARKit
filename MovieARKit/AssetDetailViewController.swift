@@ -7,13 +7,12 @@
 
 import UIKit
 import ARKit
-class AssetDetailViewController: UIViewController, ARSCNViewDelegate, SCNSceneRendererDelegate {
+class AssetDetailViewController: UIViewController, ARSCNViewDelegate {
     let sceneView: ARSCNView = {
         let sceneView = ARSCNView()
         sceneView.translatesAutoresizingMaskIntoConstraints = false
         return sceneView
     }()
-    
     let rotateXtextField: UITextField = {
         let textField = UITextField()
         textField.borderStyle = .roundedRect
@@ -35,15 +34,62 @@ class AssetDetailViewController: UIViewController, ARSCNViewDelegate, SCNSceneRe
         return textField
     }()
     
+    lazy var rotateXtextFieldView: UIStackView = {
+        let stView = UIStackView()
+        let label = UILabel()
+        stView.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "rotateX"
+        stView.axis = .horizontal
+        stView.distribution = .fillEqually
+        stView.addArrangedSubview(label)
+        stView.addArrangedSubview(rotateXtextField)
+        return stView
+    }()
+    
+    lazy var rotateYtextFieldView: UIStackView = {
+        let stView = UIStackView()
+        let label = UILabel()
+        stView.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "rotateY"
+        stView.axis = .horizontal
+        stView.distribution = .fillEqually
+        stView.addArrangedSubview(label)
+        stView.addArrangedSubview(rotateYtextField)
+        return stView
+    }()
+    
+    lazy var rotateZtextFieldView: UIStackView = {
+        let stView = UIStackView()
+        let label = UILabel()
+        stView.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "rotateZ"
+        stView.axis = .horizontal
+        stView.distribution = .fillEqually
+        stView.addArrangedSubview(label)
+        stView.addArrangedSubview(rotateZtextField)
+        return stView
+    }()
+    
+    lazy var resetButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "gobackward"), for: .normal)
+
+        button.addTarget(self, action: #selector(resetValue), for: .touchUpInside)
+        return button
+    }()
+    
     var scnNode: SCNNode!
     var isTextFieldEditing = false
+    
+    @objc func resetValue() {
+        scnNode.eulerAngles = SCNVector3Zero
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        let tap = UITapGestureRecognizer(target: self, action: #selector(UIInputViewController.dismissKeyboard))
         
-        view.addGestureRecognizer(tap)
         
         let scene = SCNScene()
         
@@ -66,14 +112,21 @@ class AssetDetailViewController: UIViewController, ARSCNViewDelegate, SCNSceneRe
     }
     
     func setupUI() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(UIInputViewController.dismissKeyboard))
+        
+        view.addGestureRecognizer(tapGesture)
+        
         self.view.backgroundColor = .systemBackground
         sceneView.backgroundColor = .systemBackground
-        // Do any additional setup after loading the view.
+        
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(addTapped))
-        view.addSubview(rotateXtextField)
-        view.addSubview(rotateYtextField)
-        view.addSubview(rotateZtextField)
+        
+        view.addSubview(rotateXtextFieldView)
+        view.addSubview(rotateYtextFieldView)
+        view.addSubview(rotateZtextFieldView)
         view.addSubview(sceneView)
+        view.addSubview(resetButton)
+        
         rotateXtextField.delegate = self
         rotateYtextField.delegate = self
         rotateZtextField.delegate = self
@@ -84,20 +137,20 @@ class AssetDetailViewController: UIViewController, ARSCNViewDelegate, SCNSceneRe
             sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             sceneView.heightAnchor.constraint(equalToConstant: 300),
             
-            rotateXtextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            rotateXtextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            rotateXtextField.topAnchor.constraint(equalTo: sceneView.bottomAnchor, constant: 20),
-            rotateXtextField.heightAnchor.constraint(equalToConstant: 50),
+            resetButton.trailingAnchor.constraint(equalTo: sceneView.trailingAnchor, constant: -20),
+            resetButton.bottomAnchor.constraint(equalTo: sceneView.bottomAnchor, constant: -20),
             
-            rotateYtextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            rotateYtextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            rotateYtextField.topAnchor.constraint(equalTo: rotateXtextField.bottomAnchor, constant: 20),
-            rotateYtextField.heightAnchor.constraint(equalToConstant: 50),
+            rotateXtextFieldView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            rotateXtextFieldView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            rotateXtextFieldView.topAnchor.constraint(equalTo: sceneView.bottomAnchor, constant: 20),
             
-            rotateZtextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            rotateZtextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            rotateZtextField.topAnchor.constraint(equalTo: rotateYtextField.bottomAnchor, constant: 20),
-            rotateZtextField.heightAnchor.constraint(equalToConstant: 50)
+            rotateYtextFieldView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            rotateYtextFieldView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            rotateYtextFieldView.topAnchor.constraint(equalTo: rotateXtextFieldView.bottomAnchor, constant: 20),
+            
+            rotateZtextFieldView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            rotateZtextFieldView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            rotateZtextFieldView.topAnchor.constraint(equalTo: rotateYtextFieldView.bottomAnchor, constant: 20),
         ])
     }
     
@@ -113,7 +166,9 @@ class AssetDetailViewController: UIViewController, ARSCNViewDelegate, SCNSceneRe
     @objc func addTapped() {
         self.dismiss(animated: true)
     }
-    
+}
+
+extension AssetDetailViewController: SCNSceneRendererDelegate {
     func renderer(_ renderer: any SCNSceneRenderer, updateAtTime time: TimeInterval) {
         guard sceneView.pointOfView?.rotation != nil, !isTextFieldEditing else {
             return
