@@ -81,10 +81,10 @@ class AssetDetailViewController: UIViewController, ARSCNViewDelegate {
     
     var scnNode: SCNNode!
     var isTextFieldEditing = false
-    let sceneAsset: AssetData
+    let assetData: SCNAsset
     
-    init(sceneAsset: AssetData) {
-        self.sceneAsset = sceneAsset
+    init(sceneAsset: SCNAsset) {
+        self.assetData = sceneAsset
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -108,7 +108,7 @@ class AssetDetailViewController: UIViewController, ARSCNViewDelegate {
         sceneView.delegate = self
         
         let rootScene = SCNScene()
-        let childScene = SCNScene(named: sceneAsset.filename)!
+        let childScene = SCNScene(named: assetData.filename)!
         
         let sceneNode2 = childScene.rootNode.childNode(withName: "Geom", recursively: true)
         sceneNode2?.position = SCNVector3(0, 0, -0.5)
@@ -175,6 +175,7 @@ class AssetDetailViewController: UIViewController, ARSCNViewDelegate {
     }
     
     @objc func addTapped() {
+        NotificationCenter.default.post(name: NSNotification.Name("addModel"), object: assetData.filename)
         self.dismiss(animated: true)
     }
 }

@@ -15,7 +15,7 @@ class AssetCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    var assetData: AssetData? {
+    var assetData: SCNAsset? {
         didSet {
             self.nameLabel.text = assetData?.name
         }
@@ -23,7 +23,7 @@ class AssetCollectionViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-//        contentView.backgroundColor = .green
+
         contentView.addSubview(nameLabel)
         NSLayoutConstraint.activate([
             nameLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),

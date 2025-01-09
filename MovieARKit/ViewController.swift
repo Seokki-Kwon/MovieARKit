@@ -10,28 +10,46 @@ import SceneKit
 import ARKit
 
 class ViewController: UIViewController, ARSCNViewDelegate {
-
+    
     @IBOutlet var sceneView: ARSCNView!
     @IBOutlet weak var addButton: UIButton!
     
+    private var currentNode: SCNNode?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Set the view's delegate
+        setupScene()
+        addNotification()
+    }
+    
+    func setupScene() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapped))
+        sceneView.addGestureRecognizer(tapGesture)
         sceneView.delegate = self
-        
-        // Create a new scene
-        let chairScene = SCNScene(named: "art.scnassets/Shiba.scn")!
-        
-        let chairNode = chairScene.rootNode.childNode(withName: "Geom", recursively: true)
-        
-        chairNode?.position = SCNVector3(0, 0, -0.5)
-        
         let scene = SCNScene()
-        scene.rootNode.addChildNode(chairNode!)
-        
-        // Set the scene to the view
         sceneView.scene = scene
+    }
+    
+    @objc func tapped(recognizer: UITapGestureRecognizer) {        
+        let touch = recognizer.location(in: sceneView)
+        
+        if let query = sceneView.raycastQuery(from: touch, allowing: .estimatedPlane, alignment: .any) {
+            guard let result = sceneView.session.raycast(query).first else {
+                return
+            }
+            self.loadGeometry(result)
+        }
+    }
+    
+    func loadGeometry(_ result: ARRaycastResult) {
+        guard let currentNode = currentNode else {
+            return
+        }
+        currentNode.position = SCNVector3(result.worldTransform.columns.3.x,
+                                          result.worldTransform.columns.3.y,
+                                          result.worldTransform.columns.3.z)
+        self.sceneView.scene.rootNode.addChildNode(currentNode)
+        self.currentNode = nil
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -39,9 +57,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
-
-        // Run the view's session
         
+        // Run the view's session
+        configuration.planeDetection = .horizontal
         sceneView.session.run(configuration)
     }
     
@@ -51,35 +69,21 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Pause the view's session
         sceneView.session.pause()
     }
-
+    
     @IBAction func addButtonTapped(_ sender: Any) {
         let arAssetListVC = ARAssetListViewController()
         let navVC = UINavigationController(rootViewController: arAssetListVC)
         self.present(navVC, animated: true)
     }
-    // MARK: - ARSCNViewDelegate
     
-/*
-    // Override to create and configure nodes for anchors added to the view's session.
-    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        let node = SCNNode()
-     
-        return node
-    }
-*/
-    
-    func session(_ session: ARSession, didFailWithError error: Error) {
-        // Present an error message to the user
-        
+    func addNotification() {
+        NotificationCenter.default.addObserver(self, selector: #selector(addModel), name: NSNotification.Name("addModel"), object: nil)
     }
     
-    func sessionWasInterrupted(_ session: ARSession) {
-        // Inform the user that the session has been interrupted, for example, by presenting an overlay
-        
-    }
-    
-    func sessionInterruptionEnded(_ session: ARSession) {
-        // Reset tracking and/or remove existing anchors if consistent tracking is required
-        
+    @objc func addModel(_ notification: Notification) {
+        guard let filename = notification.object as? String else { return }
+        let scene = SCNScene(named: filename)
+        let node = scene?.rootNode.childNode(withName: "Geom", recursively: true)
+        currentNode = node
     }
 }
