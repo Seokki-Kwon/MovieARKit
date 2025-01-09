@@ -27,61 +27,23 @@ class ARAssetListViewController: UIViewController, UICollectionViewDataSource, U
         collectionView.delegate = self
         navigationItem.title = "Object"
         navigationController?.navigationBar.prefersLargeTitles = true
-        collectionView.register(AssetCollectionViewCell.self, forCellWithReuseIdentifier: AssetCollectionViewCell.identifier)
-//        collectionView.register(HeaderReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")        
+        collectionView.register(AssetCollectionViewCell.self, forCellWithReuseIdentifier: AssetCollectionViewCell.identifier)    
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 30
+        return dataset.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AssetCollectionViewCell.identifier, for: indexPath) as? AssetCollectionViewCell else {
             return UICollectionViewCell()
         }
+        cell.assetData = dataset[indexPath.row]
         return cell
     }
     
-//    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-//        switch kind {
-//        case UICollectionView.elementKindSectionHeader:
-//            guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath) as? HeaderReusableView else {
-//                fatalError("Failed to load Header!")
-//            }
-//            return header
-//        default:
-//            break
-//        }
-//        return UICollectionReusableView()
-//    }
-    
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-//        return CGSize(width: 40, height: 40)
-//    }
-    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let assetDatilVC = AssetDetailViewController()
+        let assetDatilVC = AssetDetailViewController(sceneAsset: dataset[indexPath.row])
         self.navigationController?.pushViewController(assetDatilVC, animated: true)
     }
 }
-
-//class HeaderReusableView: UICollectionReusableView {
-//    let label: UILabel = {
-//        let label = UILabel(frame: .zero)
-//        label.text = "Item Category"
-//        return label
-//    }()
-//    
-//    override init(frame: CGRect) {
-//        super.init(frame: frame)
-//        self.addSubview(label)
-//        label.translatesAutoresizingMaskIntoConstraints = false
-//        NSLayoutConstraint.activate([
-//            label.centerYAnchor.constraint(equalTo: self.centerYAnchor)
-//        ])
-//    }
-//    
-//    required init?(coder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented")
-//    }
-//}

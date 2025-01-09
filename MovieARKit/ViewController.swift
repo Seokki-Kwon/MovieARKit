@@ -21,9 +21,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.delegate = self
         
         // Create a new scene
-        let chairScene = SCNScene(named: "art.scnassets/chair2.scn")!
+        let chairScene = SCNScene(named: "art.scnassets/Shiba.scn")!
         
-        let chairNode = chairScene.rootNode.childNode(withName: "chair", recursively: true)
+        let chairNode = chairScene.rootNode.childNode(withName: "Geom", recursively: true)
         
         chairNode?.position = SCNVector3(0, 0, -0.5)
         

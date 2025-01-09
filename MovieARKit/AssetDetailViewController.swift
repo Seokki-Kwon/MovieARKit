@@ -81,29 +81,40 @@ class AssetDetailViewController: UIViewController, ARSCNViewDelegate {
     
     var scnNode: SCNNode!
     var isTextFieldEditing = false
+    let sceneAsset: AssetData
+    
+    init(sceneAsset: AssetData) {
+        self.sceneAsset = sceneAsset
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     @objc func resetValue() {
-        scnNode.eulerAngles = SCNVector3Zero
+//        scnNode.eulerAngles = SCNVector3Zero
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        
-        
-        let scene = SCNScene()
-        
-        let box = SCNBox(width: 0.2, height: 0.2, length: 0.2, chamferRadius: 0)
-        
+        setupScene()
+        setValue()
+    }
+    
+    func setupScene() {
         sceneView.allowsCameraControl = true
         sceneView.delegate = self
         
-        scnNode = SCNNode(geometry: box)
-        scnNode.position = SCNVector3(0, 0, -0.5)
+        let rootScene = SCNScene()
+        let childScene = SCNScene(named: sceneAsset.filename)!
         
-        sceneView.scene = scene
-        sceneView.scene.rootNode.addChildNode(scnNode)
-        setValue()
+        let sceneNode2 = childScene.rootNode.childNode(withName: "Geom", recursively: true)
+        sceneNode2?.position = SCNVector3(0, 0, -0.5)
+        sceneView.autoenablesDefaultLighting = true
+        rootScene.rootNode.addChildNode(sceneNode2!)
+        sceneView.scene = rootScene
     }
     
     @objc func dismissKeyboard() {
@@ -118,7 +129,7 @@ class AssetDetailViewController: UIViewController, ARSCNViewDelegate {
         
         self.view.backgroundColor = .systemBackground
         sceneView.backgroundColor = .systemBackground
-        
+
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(addTapped))
         
         view.addSubview(rotateXtextFieldView)
@@ -184,19 +195,19 @@ extension AssetDetailViewController: SCNSceneRendererDelegate {
 extension AssetDetailViewController: UITextFieldDelegate {
     
     func textFieldDidChangeSelection(_ textField: UITextField) {
-        guard let text = textField.text, let rotation = sceneView.pointOfView?.eulerAngles else {
-            return
-        }
-        
-        let newValue = (text as NSString).floatValue
-        isTextFieldEditing = true
-        if textField == rotateXtextField {
-            scnNode.eulerAngles = SCNVector3(newValue, rotation.y, rotation.z)
-        } else if textField == rotateYtextField {
-            scnNode.eulerAngles = SCNVector3(rotation.x, newValue, rotation.z)
-        } else if textField == rotateZtextField {
-            scnNode.eulerAngles = SCNVector3(rotation.x, rotation.y, newValue)
-        }
+//        guard let text = textField.text, let rotation = sceneView.pointOfView?.eulerAngles else {
+//            return
+//        }
+//        
+//        let newValue = (text as NSString).floatValue
+//        isTextFieldEditing = true
+//        if textField == rotateXtextField {
+//            scnNode.eulerAngles = SCNVector3(newValue, rotation.y, rotation.z)
+//        } else if textField == rotateYtextField {
+//            scnNode.eulerAngles = SCNVector3(rotation.x, newValue, rotation.z)
+//        } else if textField == rotateZtextField {
+//            scnNode.eulerAngles = SCNVector3(rotation.x, rotation.y, newValue)
+//        }
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
