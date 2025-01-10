@@ -12,23 +12,37 @@ class ARAssetListViewController: UIViewController, UICollectionViewDataSource, U
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-        let width = view.frame.width / 3 - 10
+        let width = (view.frame.width - 30) / 3 - (20 / 3)
+        layout.minimumLineSpacing = 10 // vertical -> column
+        layout.minimumInteritemSpacing = 10 // vertical -> row
         layout.itemSize = CGSize(width: width, height: width)
-        let collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupView()
+        collectionView.dataSource = self
+        collectionView.delegate = self
+    }
+    
+    func setupView() {
+        navigationController?.navigationBar.prefersLargeTitles = true
         view.backgroundColor = .systemBackground
         // Do any additional setup after loading the view.
         view.addSubview(collectionView)
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        navigationItem.title = "Object"
-        navigationController?.navigationBar.prefersLargeTitles = true
-        collectionView.register(AssetCollectionViewCell.self, forCellWithReuseIdentifier: AssetCollectionViewCell.identifier)    
-    }
+        navigationItem.title = "Model"
+        collectionView.register(AssetCollectionViewCell.self, forCellWithReuseIdentifier: AssetCollectionViewCell.identifier)
+        
+        NSLayoutConstraint.activate([
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 15),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -15),
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 10),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }       
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return dataset.count

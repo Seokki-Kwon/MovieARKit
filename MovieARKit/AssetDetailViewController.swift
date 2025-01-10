@@ -112,6 +112,7 @@ class AssetDetailViewController: UIViewController, ARSCNViewDelegate {
         
         let sceneNode2 = childScene.rootNode.childNode(withName: "Geom", recursively: true)
         sceneNode2?.position = SCNVector3(0, 0, -0.5)
+        
         sceneView.autoenablesDefaultLighting = true
         rootScene.rootNode.addChildNode(sceneNode2!)
         sceneView.scene = rootScene

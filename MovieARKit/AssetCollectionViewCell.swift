@@ -6,8 +6,9 @@
 //
 
 import UIKit
+import ARKit
 
-class AssetCollectionViewCell: UICollectionViewCell {
+class AssetCollectionViewCell: UICollectionViewCell, ARSCNViewDelegate {
     static let identifier = "AssetCollectionViewCell"
     let nameLabel: UILabel = {
         let label = UILabel()
@@ -15,23 +16,37 @@ class AssetCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
+    let imageView: UIImageView = {
+       let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
     var assetData: SCNAsset? {
         didSet {
-            self.nameLabel.text = assetData?.name
+            setupUI()
         }
     }
     
+    func setupUI() {
+        self.nameLabel.text = assetData?.name
+        self.imageView.image = assetData?.makeSnapshot()
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-
-        contentView.addSubview(nameLabel)
+        contentView.addSubview(imageView)
         NSLayoutConstraint.activate([
-            nameLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            nameLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            
+            imageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10),
+            imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+            imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
         ])
         contentView.layer.masksToBounds = true
         contentView.layer.borderWidth = 1.0
-        contentView.layer.borderColor = UIColor.gray.cgColor
+        contentView.layer.borderColor = UIColor.darkGray.cgColor
+        contentView.layer.cornerRadius = 4
     }
     
     required init?(coder: NSCoder) {
