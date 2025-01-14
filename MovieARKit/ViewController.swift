@@ -9,7 +9,7 @@ import UIKit
 import SceneKit
 import ARKit
 
-class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
+class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SCNNodeRendererDelegate {
     
     @IBOutlet var sceneView: ARSCNView!
     @IBOutlet weak var addButton: UIButton!
@@ -25,11 +25,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     func createFloor(anchor: ARPlaneAnchor) -> SCNNode {
         let floor = SCNNode()
         floor.name = "Floor"
-        floor.eulerAngles = SCNVector3(90.degreesToRadinans, 0, 0)
+        // 노드의 x, y, z 축을 중심으로하는 회전
+        floor.eulerAngles = SCNVector3(Float(Double.pi) / 2, 0, 0)
+        
         floor.geometry = SCNPlane(width: CGFloat(anchor.planeExtent.width), height: CGFloat(anchor.planeExtent.height))
         
-        floor.geometry?.firstMaterial?.diffuse.contents = UIColor.blue.withAlphaComponent(0.4)
+        floor.geometry?.firstMaterial?.diffuse.contents = UIColor.blue.withAlphaComponent(0.8)
         floor.geometry?.firstMaterial?.isDoubleSided = true
+        
         floor.position = SCNVector3(anchor.center.x, anchor.center.y, anchor.center.z)
         return floor
     }
@@ -47,12 +50,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         sceneView.addGestureRecognizer(tapGesture)
         sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
         sceneView.delegate = self
+        sceneView.scene.rootNode.rendererDelegate = self
         sceneView.session.delegate = self
         let scene = SCNScene()
         sceneView.scene = scene
     }
     
-    @objc func tapped(recognizer: UITapGestureRecognizer) {        
+    @objc func tapped(recognizer: UITapGestureRecognizer) {
         let touch = recognizer.location(in: sceneView)
         
         if let query = sceneView.raycastQuery(from: touch, allowing: .estimatedPlane, alignment: .any) {
@@ -79,10 +83,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
         
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
-        
+//        configuration.worldAlignment = .gravityAndHeading
         // Run the view's session
         configuration.planeDetection = .horizontal
-        sceneView.session.run(configuration, options: [.removeExistingAnchors, .resetTracking])
+        sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -113,16 +117,29 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 extension ViewController {
     func renderer(_ renderer: any SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         // 장면에 새로운 ARAnchor 노드가 추가될때 호출
+        if !(anchor is ARPlaneAnchor) {
+            return
+        }
         guard let anchorPlane = anchor as? ARPlaneAnchor else { return }
+        
         let floorNode = createFloor(anchor: anchorPlane)
         node.addChildNode(floorNode)
     }
     
     func renderer(_ renderer: any SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         guard let anchorPlane = anchor as? ARPlaneAnchor else { return }
-        let floorNode = createFloor(anchor: anchorPlane)
-        //        node.removeFromParentNode()
-        node.addChildNode(floorNode)
+        
+        if !(anchor is ARPlaneAnchor) {
+            return
+        }
+        
+        if let planeNode = node.childNodes.first {
+            if let planeGeometry = node.childNodes.first?.geometry as? SCNPlane {
+                planeGeometry.width = CGFloat(anchorPlane.planeExtent.width)
+                planeGeometry.height = CGFloat(anchorPlane.planeExtent.height)
+                planeNode.position = SCNVector3(x: anchorPlane.center.x, y: 0.0, z: anchorPlane.center.z)
+            }
+        }
     }
     
     func renderer(_ renderer: any SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
