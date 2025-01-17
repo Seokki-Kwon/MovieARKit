@@ -9,11 +9,11 @@ import UIKit
 import SceneKit
 import ARKit
 
-class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SCNNodeRendererDelegate {
+class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelegate, ARCoachingOverlayViewDelegate {
     
     @IBOutlet var sceneView: ARSCNView!
     @IBOutlet weak var addButton: UIButton!
-    
+    lazy var coachingOverlay = ARCoachingOverlayView(frame: view.bounds)
     private var currentNode: SCNNode?
     private var planes: [SCNNode] = []
     
@@ -21,15 +21,50 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
         super.viewDidLoad()
         setupScene()
         addNotification()
+        setupCoachingView()
+    }
+    
+    func updateFocus() {
+        if let camera = sceneView.session.currentFrame?.camera, case .normal = camera.trackingState,
+           let query = self.getRaycastQuery(from: sceneView.center),
+           let result = sceneView.session.raycast(query).first {
+                if let pointerNode = sceneView.scene.rootNode.childNode(withName: "pointer", recursively: true) {
+                    pointerNode.simdTransform = result.worldTransform
+                } else {
+                    let plane = SCNBox(width: 0.2, height: 0.01, length: 0.2, chamferRadius: 0)
+                    plane.firstMaterial?.diffuse.contents = UIColor.green.withAlphaComponent(0.8)
+                    let node = SCNNode(geometry: plane)
+                    node.eulerAngles.x = .pi / 2
+                    node.name = "pointer"
+                    node.simdTransform = result.worldTransform
+                    sceneView.scene.rootNode.addChildNode(node)
+                }
+            }
+    }
+    
+    func setupCoachingView() {
+        sceneView.addSubview(coachingOverlay)
+        coachingOverlay.session = sceneView.session
+        coachingOverlay.delegate = self
+        
+        NSLayoutConstraint.activate([
+            coachingOverlay.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            coachingOverlay.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            coachingOverlay.widthAnchor.constraint(equalTo: view.widthAnchor),
+            coachingOverlay.heightAnchor.constraint(equalTo: view.heightAnchor)
+        ])
+        
+        coachingOverlay.goal = .horizontalPlane
+        coachingOverlay.activatesAutomatically = true
     }
     
     func setupScene() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapped))
         sceneView.addGestureRecognizer(tapGesture)
         sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
+        sceneView.session.delegate = self
         sceneView.delegate = self
         sceneView.scene.rootNode.rendererDelegate = self
-        sceneView.session.delegate = self
         let scene = SCNScene()
         sceneView.scene = scene
     }
@@ -54,7 +89,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
                                           result.worldTransform.columns.3.z)
         self.sceneView.scene.rootNode.addChildNode(currentNode)
         self.currentNode = nil
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -62,6 +96,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
         
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
+        if ARWorldTrackingConfiguration.supportsFrameSemantics(.personSegmentationWithDepth) {
+            configuration.frameSemantics.insert(.personSegmentationWithDepth)
+        }
         
         // Run the view's session
         configuration.planeDetection = [.horizontal, .vertical]
@@ -76,9 +113,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
     }
     
     @IBAction func addButtonTapped(_ sender: Any) {
-        let arAssetListVC = ARAssetListViewController()
-        let navVC = UINavigationController(rootViewController: arAssetListVC)
-        self.present(navVC, animated: true)
+        //        let arAssetListVC = ARAssetListViewController()
+        //        let navVC = UINavigationController(rootViewController: arAssetListVC)
+        //        self.present(navVC, animated: true)
     }
     
     func addNotification() {
@@ -103,6 +140,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
         let planeNode = SCNNode(geometry: plane)
         planeNode.position = SCNVector3Make(0, -0.01 / 2, 0)
         planeNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeNode.geometry!))
+        
         planeNode.name = anchor.identifier.uuidString
         
         return planeNode
@@ -140,14 +178,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
 
 extension ViewController {
     func renderer(_ renderer: any SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        guard let planeNode = createPlane(for: anchor) else { return }
-        planes.append(planeNode)
-        
-        node.addChildNode(planeNode)
+        //        guard let planeNode = createPlane(for: anchor) else { return }
+        //        planes.append(planeNode)
+        //        node.addChildNode(planeNode)
     }
     
     func renderer(_ renderer: any SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-        self.updatePlane(for: anchor)
+        //        self.updatePlane(for: anchor)
     }
     
     func renderer(_ renderer: any SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
@@ -158,5 +195,21 @@ extension ViewController {
             }
         }
     }
+}
+
+extension ViewController: ARSessionDelegate {
     
+    func renderer(_ renderer: any SCNSceneRenderer, updateAtTime time: TimeInterval) {
+        if coachingOverlay.isActive {
+            return
+        }
+        
+        DispatchQueue.main.async {
+            self.updateFocus()
+        }
+    }
+    
+    func getRaycastQuery(from point: CGPoint) -> ARRaycastQuery? {
+        return sceneView.raycastQuery(from: point, allowing: .estimatedPlane, alignment: .any)
+    }
 }
