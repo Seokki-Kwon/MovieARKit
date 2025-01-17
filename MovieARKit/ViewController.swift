@@ -61,6 +61,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
                                           result.worldTransform.columns.3.z)
         self.sceneView.scene.rootNode.addChildNode(currentNode)
         self.currentNode = nil
+    
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -112,8 +113,10 @@ extension ViewController {
         let planeNode = SCNNode(geometry: plane)
         planeNode.position = SCNVector3Make(0, -0.01 / 2, 0)
         planeNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeNode.geometry!))
+        let textNode = makeTextNode(anchorPlane.classification.description)
         
         planeNode.name = anchor.identifier.uuidString
+        planeNode.addChildNode(textNode)
         node.addChildNode(planeNode)
     }
     
@@ -146,5 +149,16 @@ extension ViewController {
                 node.removeFromParentNode()
             }
         }
+    }
+    
+    private func makeTextNode(_ text: String) -> SCNNode {
+        let textGeometry = SCNText(string: text, extrusionDepth: 1)
+        textGeometry.font = UIFont.systemFont(ofSize: 80)
+
+        let textNode = SCNNode(geometry: textGeometry)
+        // scale down the size of the text
+        textNode.simdScale = float3(0.0005)
+        
+        return textNode
     }
 }

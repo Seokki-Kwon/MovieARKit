@@ -33,4 +33,25 @@ extension ARPlaneAnchor.Classification {
             return .black
         }
     }
+    
+    var description: String {
+        switch self {
+        case .wall:
+            return "Wall"
+        case .floor:
+            return "Floor"
+        case .ceiling:
+            return "Ceiling"
+        case .table:
+            return "Table"
+        case .seat:
+            return "Seat"
+        case .window:
+            return "Window"
+        case .door:
+            return "Door"
+        @unknown default:
+            return "None"
+        }
+    }
 }
