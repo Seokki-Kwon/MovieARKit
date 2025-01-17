@@ -15,19 +15,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
     @IBOutlet weak var addButton: UIButton!
     
     private var currentNode: SCNNode?
+    private var planes: [SCNNode] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupScene()
         addNotification()
-    }
-    
-    func removeNode(named: String) {
-        sceneView.scene.rootNode.enumerateChildNodes { node, _ in
-            if node.name == named {
-                node.removeFromParentNode()
-            }
-        }
     }
     
     func setupScene() {
@@ -61,7 +54,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
                                           result.worldTransform.columns.3.z)
         self.sceneView.scene.rootNode.addChildNode(currentNode)
         self.currentNode = nil
-    
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -98,51 +91,66 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
         let node = scene?.rootNode.childNode(withName: "Geom", recursively: true)
         currentNode = node
     }
+    
+    func createPlane(for anchor: ARAnchor) -> SCNNode? {
+        guard let anchorPlane = anchor as? ARPlaneAnchor, anchor is ARPlaneAnchor else {
+            return nil
+        }
+        
+        let plane = SCNBox(width: CGFloat(anchorPlane.planeExtent.width), height: 0.01, length: CGFloat(anchorPlane.planeExtent.height), chamferRadius: 0)
+        plane.firstMaterial?.diffuse.contents = anchorPlane.classification.planeColor
+        
+        let planeNode = SCNNode(geometry: plane)
+        planeNode.position = SCNVector3Make(0, -0.01 / 2, 0)
+        planeNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeNode.geometry!))
+        planeNode.name = anchor.identifier.uuidString
+        
+        return planeNode
+    }
+    
+    func updatePlane(for anchor: ARAnchor) {
+        if !(anchor is ARPlaneAnchor) {
+            return
+        }
+        guard let anchorPlane = anchor as? ARPlaneAnchor,
+              let planeNode = planes.first(where: { $0.name == anchor.identifier.uuidString }),
+              let planeGeometry = planeNode.geometry as? SCNBox else {
+            return
+        }
+        
+        planeGeometry.firstMaterial?.diffuse.contents = anchorPlane.classification.planeColor.withAlphaComponent(0.8)
+        planeGeometry.width = CGFloat(anchorPlane.planeExtent.width)
+        planeGeometry.length = CGFloat(anchorPlane.planeExtent.height)
+        planeNode.position =  SCNVector3Make(anchorPlane.center.x, 0, anchorPlane.center.z)
+        planeNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeGeometry))
+    }
+    
+    private func makeTextNode(_ text: String) -> SCNNode {
+        let textGeometry = SCNText(string: text, extrusionDepth: 1)
+        textGeometry.font = UIFont.systemFont(ofSize: 80)
+        
+        let textNode = SCNNode(geometry: textGeometry)
+        textNode.eulerAngles = .init(0, 0, 0)
+        // scale down the size of the text
+        textNode.simdScale = float3(0.0005)
+        
+        return textNode
+    }
 }
 
 extension ViewController {
     func renderer(_ renderer: any SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        if !(anchor is ARPlaneAnchor) {
-            return
-        }
+        guard let planeNode = createPlane(for: anchor) else { return }
+        planes.append(planeNode)
         
-        guard let anchorPlane = anchor as? ARPlaneAnchor else { return }
-        
-        let plane = SCNBox(width: CGFloat(anchorPlane.planeExtent.width), height: 0.01, length: CGFloat(anchorPlane.planeExtent.height), chamferRadius: 0)
-        plane.firstMaterial?.diffuse.contents = anchorPlane.classification.planeColor
-        let planeNode = SCNNode(geometry: plane)
-        planeNode.position = SCNVector3Make(0, -0.01 / 2, 0)
-        planeNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeNode.geometry!))
-        let textNode = makeTextNode(anchorPlane.classification.description)
-        
-        planeNode.name = anchor.identifier.uuidString
-        planeNode.addChildNode(textNode)
         node.addChildNode(planeNode)
     }
     
     func renderer(_ renderer: any SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-        guard let anchorPlane = anchor as? ARPlaneAnchor else { return }
-        
-        if !(anchor is ARPlaneAnchor) {
-            return
-        }
-        
-        if let planeNode = node.childNodes.first {
-            if let planeGeometry = node.childNodes.first?.geometry as? SCNBox {
-                if node.childNodes.first!.name != anchor.identifier.uuidString {
-                    return
-                }
-                planeGeometry.firstMaterial?.diffuse.contents = anchorPlane.classification.planeColor.withAlphaComponent(0.8)
-                    planeGeometry.width = CGFloat(anchorPlane.planeExtent.width)
-                    planeGeometry.length = CGFloat(anchorPlane.planeExtent.height)
-                    planeNode.position =  SCNVector3Make(anchorPlane.center.x, 0, anchorPlane.center.z)
-                    planeNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeGeometry))
-            }
-        }
+        self.updatePlane(for: anchor)
     }
     
     func renderer(_ renderer: any SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
-        
         sceneView.scene.rootNode.enumerateChildNodes { node, _ in
             if node.name == anchor.identifier.uuidString {
                 print("Remove node")
@@ -151,14 +159,4 @@ extension ViewController {
         }
     }
     
-    private func makeTextNode(_ text: String) -> SCNNode {
-        let textGeometry = SCNText(string: text, extrusionDepth: 1)
-        textGeometry.font = UIFont.systemFont(ofSize: 80)
-
-        let textNode = SCNNode(geometry: textGeometry)
-        // scale down the size of the text
-        textNode.simdScale = float3(0.0005)
-        
-        return textNode
-    }
 }
