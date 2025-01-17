@@ -22,24 +22,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
         addNotification()
     }
     
-    func createFloor(anchor: ARPlaneAnchor) -> SCNNode {
-        let floor = SCNNode()
-        floor.name = "Floor"
-        // 노드의 x, y, z 축을 중심으로하는 회전
-        floor.eulerAngles = SCNVector3(Float(Double.pi) / 2, 0, 0)
-        
-        floor.geometry = SCNPlane(width: CGFloat(anchor.planeExtent.width), height: CGFloat(anchor.planeExtent.height))
-        
-        floor.geometry?.firstMaterial?.diffuse.contents = UIColor.blue.withAlphaComponent(0.8)
-        floor.geometry?.firstMaterial?.isDoubleSided = true
-        
-        floor.position = SCNVector3(anchor.center.x, anchor.center.y, anchor.center.z)
-        return floor
-    }
-    
     func removeNode(named: String) {
         sceneView.scene.rootNode.enumerateChildNodes { node, _ in
-            if node.name == "Floor" {
+            if node.name == named {
                 node.removeFromParentNode()
             }
         }
@@ -83,9 +68,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
         
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
-//        configuration.worldAlignment = .gravityAndHeading
+        
         // Run the view's session
-        configuration.planeDetection = .horizontal
+        configuration.planeDetection = [.horizontal, .vertical]
         sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
     }
     
@@ -116,14 +101,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate, SC
 
 extension ViewController {
     func renderer(_ renderer: any SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-        // 장면에 새로운 ARAnchor 노드가 추가될때 호출
         if !(anchor is ARPlaneAnchor) {
             return
         }
+        
         guard let anchorPlane = anchor as? ARPlaneAnchor else { return }
         
-        let floorNode = createFloor(anchor: anchorPlane)
-        node.addChildNode(floorNode)
+        let plane = SCNBox(width: CGFloat(anchorPlane.planeExtent.width), height: 0.01, length: CGFloat(anchorPlane.planeExtent.height), chamferRadius: 0)
+        plane.firstMaterial?.diffuse.contents = anchorPlane.classification.planeColor
+        let planeNode = SCNNode(geometry: plane)
+        planeNode.position = SCNVector3Make(0, -0.01 / 2, 0)
+        planeNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeNode.geometry!))
+        
+        planeNode.name = anchor.identifier.uuidString
+        node.addChildNode(planeNode)
     }
     
     func renderer(_ renderer: any SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
@@ -134,16 +125,26 @@ extension ViewController {
         }
         
         if let planeNode = node.childNodes.first {
-            if let planeGeometry = node.childNodes.first?.geometry as? SCNPlane {
-                planeGeometry.width = CGFloat(anchorPlane.planeExtent.width)
-                planeGeometry.height = CGFloat(anchorPlane.planeExtent.height)
-                planeNode.position = SCNVector3(x: anchorPlane.center.x, y: 0.0, z: anchorPlane.center.z)
+            if let planeGeometry = node.childNodes.first?.geometry as? SCNBox {
+                if node.childNodes.first!.name != anchor.identifier.uuidString {
+                    return
+                }
+                planeGeometry.firstMaterial?.diffuse.contents = anchorPlane.classification.planeColor.withAlphaComponent(0.8)
+                    planeGeometry.width = CGFloat(anchorPlane.planeExtent.width)
+                    planeGeometry.length = CGFloat(anchorPlane.planeExtent.height)
+                    planeNode.position =  SCNVector3Make(anchorPlane.center.x, 0, anchorPlane.center.z)
+                    planeNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeGeometry))
             }
         }
     }
     
     func renderer(_ renderer: any SCNSceneRenderer, didRemove node: SCNNode, for anchor: ARAnchor) {
-        print("Remove node")
-        removeNode(named: "Floor")
+        
+        sceneView.scene.rootNode.enumerateChildNodes { node, _ in
+            if node.name == anchor.identifier.uuidString {
+                print("Remove node")
+                node.removeFromParentNode()
+            }
+        }
     }
 }
