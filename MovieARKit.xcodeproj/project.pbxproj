@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		477B620C2D2F70CA00948912 /* dataset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477B620B2D2F70CA00948912 /* dataset.swift */; };
 		4781FDE92D325849009E897B /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4781FDE82D325849009E897B /* Extensions.swift */; };
+		47994C7F2D3B949400CC41C1 /* ViewController+Focus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47994C7E2D3B949400CC41C1 /* ViewController+Focus.swift */; };
+		47994C812D3B94E700CC41C1 /* ViewController+PlaneDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47994C802D3B94E700CC41C1 /* ViewController+PlaneDetection.swift */; };
 		47E0F0522D2ABC5700A4613F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E0F0512D2ABC5700A4613F /* AppDelegate.swift */; };
 		47E0F0542D2ABC5700A4613F /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = 47E0F0532D2ABC5700A4613F /* art.scnassets */; };
 		47E0F0562D2ABC5700A4613F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E0F0552D2ABC5700A4613F /* ViewController.swift */; };
@@ -23,6 +25,8 @@
 /* Begin PBXFileReference section */
 		477B620B2D2F70CA00948912 /* dataset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dataset.swift; sourceTree = "<group>"; };
 		4781FDE82D325849009E897B /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		47994C7E2D3B949400CC41C1 /* ViewController+Focus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+Focus.swift"; sourceTree = "<group>"; };
+		47994C802D3B94E700CC41C1 /* ViewController+PlaneDetection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+PlaneDetection.swift"; sourceTree = "<group>"; };
 		47E0F04E2D2ABC5700A4613F /* MovieARKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MovieARKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		47E0F0512D2ABC5700A4613F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		47E0F0532D2ABC5700A4613F /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -68,6 +72,8 @@
 				47E0F0512D2ABC5700A4613F /* AppDelegate.swift */,
 				47E0F0532D2ABC5700A4613F /* art.scnassets */,
 				47E0F0552D2ABC5700A4613F /* ViewController.swift */,
+				47994C7E2D3B949400CC41C1 /* ViewController+Focus.swift */,
+				47994C802D3B94E700CC41C1 /* ViewController+PlaneDetection.swift */,
 				4781FDE82D325849009E897B /* Extensions.swift */,
 				47E0F0642D2AC1AF00A4613F /* ARAssetListViewController.swift */,
 				47E0F0702D2AD6D600A4613F /* AssetDetailViewController.swift */,
@@ -159,6 +165,8 @@
 				477B620C2D2F70CA00948912 /* dataset.swift in Sources */,
 				47E0F06F2D2AD64900A4613F /* AssetCollectionViewCell.swift in Sources */,
 				4781FDE92D325849009E897B /* Extensions.swift in Sources */,
+				47994C7F2D3B949400CC41C1 /* ViewController+Focus.swift in Sources */,
+				47994C812D3B94E700CC41C1 /* ViewController+PlaneDetection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

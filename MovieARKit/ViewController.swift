@@ -15,7 +15,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
     @IBOutlet weak var addButton: UIButton!
     lazy var coachingOverlay = ARCoachingOverlayView(frame: view.bounds)
     private var currentNode: SCNNode?
-    private var planes: [SCNNode] = []
+    var planes: [SCNNode] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,25 +23,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
         addNotification()
         setupCoachingView()
     }
-    
-    func updateFocus() {
-        if let camera = sceneView.session.currentFrame?.camera, case .normal = camera.trackingState,
-           let query = self.getRaycastQuery(from: sceneView.center),
-           let result = sceneView.session.raycast(query).first {
-                if let pointerNode = sceneView.scene.rootNode.childNode(withName: "pointer", recursively: true) {
-                    pointerNode.simdTransform = result.worldTransform
-                } else {
-                    let plane = SCNBox(width: 0.2, height: 0.01, length: 0.2, chamferRadius: 0)
-                    plane.firstMaterial?.diffuse.contents = UIColor.green.withAlphaComponent(0.8)
-                    let node = SCNNode(geometry: plane)
-                    node.eulerAngles.x = .pi / 2
-                    node.name = "pointer"
-                    node.simdTransform = result.worldTransform
-                    sceneView.scene.rootNode.addChildNode(node)
-                }
-            }
-    }
-    
+        
     func setupCoachingView() {
         sceneView.addSubview(coachingOverlay)
         coachingOverlay.session = sceneView.session
@@ -51,7 +33,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
             coachingOverlay.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             coachingOverlay.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             coachingOverlay.widthAnchor.constraint(equalTo: view.widthAnchor),
-            coachingOverlay.heightAnchor.constraint(equalTo: view.heightAnchor)
+            coachingOverlay.heightAnchor.constraint(equalTo: view.heightAnchor),
+            coachingOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
         coachingOverlay.goal = .horizontalPlane
@@ -113,9 +96,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
     }
     
     @IBAction func addButtonTapped(_ sender: Any) {
-        //        let arAssetListVC = ARAssetListViewController()
-        //        let navVC = UINavigationController(rootViewController: arAssetListVC)
-        //        self.present(navVC, animated: true)
+        let arAssetListVC = ARAssetListViewController()
+        let navVC = UINavigationController(rootViewController: arAssetListVC)
+        self.present(navVC, animated: true)
     }
     
     func addNotification() {
@@ -129,50 +112,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
         currentNode = node
     }
     
-    func createPlane(for anchor: ARAnchor) -> SCNNode? {
-        guard let anchorPlane = anchor as? ARPlaneAnchor, anchor is ARPlaneAnchor else {
-            return nil
-        }
-        
-        let plane = SCNBox(width: CGFloat(anchorPlane.planeExtent.width), height: 0.01, length: CGFloat(anchorPlane.planeExtent.height), chamferRadius: 0)
-        plane.firstMaterial?.diffuse.contents = anchorPlane.classification.planeColor
-        
-        let planeNode = SCNNode(geometry: plane)
-        planeNode.position = SCNVector3Make(0, -0.01 / 2, 0)
-        planeNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeNode.geometry!))
-        
-        planeNode.name = anchor.identifier.uuidString
-        
-        return planeNode
-    }
-    
-    func updatePlane(for anchor: ARAnchor) {
-        if !(anchor is ARPlaneAnchor) {
-            return
-        }
-        guard let anchorPlane = anchor as? ARPlaneAnchor,
-              let planeNode = planes.first(where: { $0.name == anchor.identifier.uuidString }),
-              let planeGeometry = planeNode.geometry as? SCNBox else {
-            return
-        }
-        
-        planeGeometry.firstMaterial?.diffuse.contents = anchorPlane.classification.planeColor.withAlphaComponent(0.8)
-        planeGeometry.width = CGFloat(anchorPlane.planeExtent.width)
-        planeGeometry.length = CGFloat(anchorPlane.planeExtent.height)
-        planeNode.position =  SCNVector3Make(anchorPlane.center.x, 0, anchorPlane.center.z)
-        planeNode.physicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeGeometry))
-    }
-    
-    private func makeTextNode(_ text: String) -> SCNNode {
-        let textGeometry = SCNText(string: text, extrusionDepth: 1)
-        textGeometry.font = UIFont.systemFont(ofSize: 80)
-        
-        let textNode = SCNNode(geometry: textGeometry)
-        textNode.eulerAngles = .init(0, 0, 0)
-        // scale down the size of the text
-        textNode.simdScale = float3(0.0005)
-        
-        return textNode
+    func getRaycastQuery(from point: CGPoint) -> ARRaycastQuery? {
+        return sceneView.raycastQuery(from: point, allowing: .estimatedPlane, alignment: .any)
     }
 }
 
@@ -207,9 +148,5 @@ extension ViewController: ARSessionDelegate {
         DispatchQueue.main.async {
             self.updateFocus()
         }
-    }
-    
-    func getRaycastQuery(from point: CGPoint) -> ARRaycastQuery? {
-        return sceneView.raycastQuery(from: point, allowing: .estimatedPlane, alignment: .any)
     }
 }
