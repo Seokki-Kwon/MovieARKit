@@ -14,28 +14,19 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
     @IBOutlet var sceneView: ARSCNView!
     @IBOutlet weak var addButton: UIButton!
     lazy var coachingOverlay = ARCoachingOverlayView(frame: view.bounds)
-    private var currentNode: SCNNode?
+    var currentNode: SCNNode?
     var planes: [SCNNode] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupScene()
-        addNotification()
         setupCoachingView()
     }
-        
+    
     func setupCoachingView() {
         sceneView.addSubview(coachingOverlay)
         coachingOverlay.session = sceneView.session
         coachingOverlay.delegate = self
-        
-        NSLayoutConstraint.activate([
-            coachingOverlay.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            coachingOverlay.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            coachingOverlay.widthAnchor.constraint(equalTo: view.widthAnchor),
-            coachingOverlay.heightAnchor.constraint(equalTo: view.heightAnchor),
-            coachingOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
         
         coachingOverlay.goal = .horizontalPlane
         coachingOverlay.activatesAutomatically = true
@@ -53,23 +44,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
     }
     
     @objc func tapped(recognizer: UITapGestureRecognizer) {
-        let touch = recognizer.location(in: sceneView)
+        guard let currentNode = currentNode else { return }
+        guard let query = getRaycastQuery(from: sceneView.center),
+        let result = sceneView.session.raycast(query).first else { return }
         
-        if let query = sceneView.raycastQuery(from: touch, allowing: .estimatedPlane, alignment: .any) {
-            guard let result = sceneView.session.raycast(query).first else {
-                return
-            }
-            self.loadGeometry(result)
-        }
+        currentNode.simdTransform = result.worldTransform
+        self.sceneView.scene.rootNode.addChildNode(currentNode)
+        self.currentNode = nil
     }
     
     func loadGeometry(_ result: ARRaycastResult) {
         guard let currentNode = currentNode else {
             return
         }
-        currentNode.position = SCNVector3(result.worldTransform.columns.3.x,
-                                          result.worldTransform.columns.3.y,
-                                          result.worldTransform.columns.3.z)
+        currentNode.simdTransform = result.worldTransform
         self.sceneView.scene.rootNode.addChildNode(currentNode)
         self.currentNode = nil
     }
@@ -86,6 +74,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
         // Run the view's session
         configuration.planeDetection = [.horizontal, .vertical]
         sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        addNotification()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -93,6 +82,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
         
         // Pause the view's session
         sceneView.session.pause()
+        removeNotification()
     }
     
     @IBAction func addButtonTapped(_ sender: Any) {
@@ -105,10 +95,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
         NotificationCenter.default.addObserver(self, selector: #selector(addModel), name: NSNotification.Name("addModel"), object: nil)
     }
     
+    func removeNotification() {
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("addModel"), object: nil)
+    }
+    
     @objc func addModel(_ notification: Notification) {
         guard let filename = notification.object as? String else { return }
         let scene = SCNScene(named: filename)
-        let node = scene?.rootNode.childNode(withName: "Geom", recursively: true)
+        guard let node = scene?.rootNode.childNode(withName: "Geom", recursively: true) else { return }
+        sceneView.scene.rootNode.addChildNode(node)
         currentNode = node
     }
     
@@ -147,6 +142,7 @@ extension ViewController: ARSessionDelegate {
         
         DispatchQueue.main.async {
             self.updateFocus()
+            self.updateObject()
         }
     }
 }

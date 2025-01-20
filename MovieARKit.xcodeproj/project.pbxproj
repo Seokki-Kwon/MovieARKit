@@ -20,6 +20,7 @@
 		47E0F0652D2AC1AF00A4613F /* ARAssetListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E0F0642D2AC1AF00A4613F /* ARAssetListViewController.swift */; };
 		47E0F06F2D2AD64900A4613F /* AssetCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E0F06E2D2AD64900A4613F /* AssetCollectionViewCell.swift */; };
 		47E0F0712D2AD6D600A4613F /* AssetDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E0F0702D2AD6D600A4613F /* AssetDetailViewController.swift */; };
+		47E9EA2D2D3E1173007B7D06 /* ViewController+VirtualObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E9EA2C2D3E1173007B7D06 /* ViewController+VirtualObject.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		47E0F0642D2AC1AF00A4613F /* ARAssetListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARAssetListViewController.swift; sourceTree = "<group>"; };
 		47E0F06E2D2AD64900A4613F /* AssetCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetCollectionViewCell.swift; sourceTree = "<group>"; };
 		47E0F0702D2AD6D600A4613F /* AssetDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDetailViewController.swift; sourceTree = "<group>"; };
+		47E9EA2C2D3E1173007B7D06 /* ViewController+VirtualObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewController+VirtualObject.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +74,7 @@
 				47E0F0512D2ABC5700A4613F /* AppDelegate.swift */,
 				47E0F0532D2ABC5700A4613F /* art.scnassets */,
 				47E0F0552D2ABC5700A4613F /* ViewController.swift */,
+				47E9EA2C2D3E1173007B7D06 /* ViewController+VirtualObject.swift */,
 				47994C7E2D3B949400CC41C1 /* ViewController+Focus.swift */,
 				47994C802D3B94E700CC41C1 /* ViewController+PlaneDetection.swift */,
 				4781FDE82D325849009E897B /* Extensions.swift */,
@@ -167,6 +170,7 @@
 				4781FDE92D325849009E897B /* Extensions.swift in Sources */,
 				47994C7F2D3B949400CC41C1 /* ViewController+Focus.swift in Sources */,
 				47994C812D3B94E700CC41C1 /* ViewController+PlaneDetection.swift in Sources */,
+				47E9EA2D2D3E1173007B7D06 /* ViewController+VirtualObject.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
