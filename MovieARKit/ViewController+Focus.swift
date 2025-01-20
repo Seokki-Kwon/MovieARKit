@@ -13,8 +13,11 @@ extension ViewController {
         if let camera = sceneView.session.currentFrame?.camera, case .normal = camera.trackingState,
            let query = self.getRaycastQuery(from: sceneView.center),
            let result = sceneView.session.raycast(query).first {
-            // 포커스 노드가 존재하는경우 위치업데이트            
+            
+            // 포커스 노드가 존재하는경우 위치업데이트
             if let pointerNode = sceneView.scene.rootNode.childNode(withName: "pointer", recursively: true) {
+                pointerNode.isHidden = false
+                focusImage.isHidden = true
                 pointerNode.simdTransform = result.worldTransform
                 resizeFocus(for: pointerNode, camera: camera)
             } else {
@@ -25,6 +28,12 @@ extension ViewController {
                 node.name = "pointer"
                 node.simdTransform = result.worldTransform
                 sceneView.scene.rootNode.addChildNode(node)
+            }
+        } else {
+            if let pointerNode = sceneView.scene.rootNode.childNode(withName: "pointer", recursively: true), 
+                let camera = sceneView.session.currentFrame?.camera {
+                pointerNode.isHidden = true
+                focusImage.isHidden = false
             }
         }
     }

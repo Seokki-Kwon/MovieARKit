@@ -13,13 +13,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
     
     @IBOutlet var sceneView: ARSCNView!
     @IBOutlet weak var addButton: UIButton!
+    
+    lazy var focusImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.frame.size.width = 100
+        imageView.frame.size.height = 200
+        imageView.image = UIImage(named: "focus")
+        return imageView
+    }()
     lazy var coachingOverlay = ARCoachingOverlayView(frame: view.bounds)
     var currentNode: SCNNode?
-    var planes: [SCNNode] = []
+    var scale: SCNVector3?
+    var planes: [SCNNode] = []        
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupScene()
+        setupUI()
         setupCoachingView()
     }
     
@@ -34,13 +45,39 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
     
     func setupScene() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapped))
+//        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(pinch))
+        let panGesture = UIRotationGestureRecognizer(target: self, action: #selector(panned))
         sceneView.addGestureRecognizer(tapGesture)
-        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints, ARSCNDebugOptions.showWorldOrigin]
+//        sceneView.addGestureRecognizer(pinchGesture)
+        sceneView.addGestureRecognizer(panGesture)
+       
         sceneView.session.delegate = self
         sceneView.delegate = self
         sceneView.scene.rootNode.rendererDelegate = self
         let scene = SCNScene()
         sceneView.scene = scene
+    }
+    
+    func setupUI() {
+        sceneView.addSubview(focusImage)
+        
+        NSLayoutConstraint.activate([
+            focusImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            focusImage.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
+    
+    @objc func panned(recognizer: UIRotationGestureRecognizer) {
+        if recognizer.state == .began || recognizer.state == .changed {
+                                    
+        }
+    }
+    
+    @objc func pinch(recognizer: UIPinchGestureRecognizer) {
+        if recognizer.state == .changed {
+            let scaleFactor = recognizer.scale
+            scale = SCNVector3(scaleFactor, scaleFactor, scaleFactor)
+        }
     }
     
     @objc func tapped(recognizer: UITapGestureRecognizer) {
@@ -49,6 +86,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
         let result = sceneView.session.raycast(query).first else { return }
         
         currentNode.simdTransform = result.worldTransform
+        if let scale = scale {
+            currentNode.scale = scale
+        }
         self.sceneView.scene.rootNode.addChildNode(currentNode)
         self.currentNode = nil
     }

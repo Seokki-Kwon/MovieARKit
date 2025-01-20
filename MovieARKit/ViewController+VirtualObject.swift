@@ -14,7 +14,10 @@ extension ViewController {
            let currentNode = currentNode,
            let query = self.getRaycastQuery(from: sceneView.center),
            let result = sceneView.session.raycast(query).first {
-               currentNode.simdTransform = result.worldTransform               
+               currentNode.simdTransform = result.worldTransform     
+//               if let scale = scale {
+//                   currentNode.scale = scale
+//               }
         }
     }
 }
