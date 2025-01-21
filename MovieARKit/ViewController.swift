@@ -18,14 +18,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.frame.size.width = 100
-        imageView.frame.size.height = 200
+        imageView.frame.size.height = 100
         imageView.image = UIImage(named: "focus")
         return imageView
     }()
     lazy var coachingOverlay = ARCoachingOverlayView(frame: view.bounds)
     var currentNode: SCNNode?
     var scale: SCNVector3?
-    var planes: [SCNNode] = []        
+    var rotate: Float?
+    var planes: [SCNNode] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,10 +46,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
     
     func setupScene() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapped))
-//        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(pinch))
+        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(pinch))
         let panGesture = UIRotationGestureRecognizer(target: self, action: #selector(panned))
         sceneView.addGestureRecognizer(tapGesture)
-//        sceneView.addGestureRecognizer(pinchGesture)
+        sceneView.addGestureRecognizer(pinchGesture)
         sceneView.addGestureRecognizer(panGesture)
        
         sceneView.session.delegate = self
@@ -69,7 +70,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
     
     @objc func panned(recognizer: UIRotationGestureRecognizer) {
         if recognizer.state == .began || recognizer.state == .changed {
-                                    
+           let rotate = Float(recognizer.rotation)
+           self.rotate = rotate
         }
     }
     
@@ -88,6 +90,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
         currentNode.simdTransform = result.worldTransform
         if let scale = scale {
             currentNode.scale = scale
+        }
+        if let rotate = rotate {
+            currentNode.eulerAngles.y -= rotate
         }
         self.sceneView.scene.rootNode.addChildNode(currentNode)
         self.currentNode = nil
