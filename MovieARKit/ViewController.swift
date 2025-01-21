@@ -24,87 +24,18 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
     }()
     lazy var coachingOverlay = ARCoachingOverlayView(frame: view.bounds)
     var currentNode: SCNNode?
+    var tempNode: SCNNode?
     var scale: SCNVector3?
     var rotate: Float?
+    var localTranslate: CGPoint!
     var planes: [SCNNode] = []
     
+    // LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupScene()
         setupUI()
         setupCoachingView()
-    }
-    
-    func setupCoachingView() {
-        sceneView.addSubview(coachingOverlay)
-        coachingOverlay.session = sceneView.session
-        coachingOverlay.delegate = self
-        
-        coachingOverlay.goal = .horizontalPlane
-        coachingOverlay.activatesAutomatically = true
-    }
-    
-    func setupScene() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapped))
-        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(pinch))
-        let panGesture = UIRotationGestureRecognizer(target: self, action: #selector(panned))
-        sceneView.addGestureRecognizer(tapGesture)
-        sceneView.addGestureRecognizer(pinchGesture)
-        sceneView.addGestureRecognizer(panGesture)
-       
-        sceneView.session.delegate = self
-        sceneView.delegate = self
-        sceneView.scene.rootNode.rendererDelegate = self
-        let scene = SCNScene()
-        sceneView.scene = scene
-    }
-    
-    func setupUI() {
-        sceneView.addSubview(focusImage)
-        
-        NSLayoutConstraint.activate([
-            focusImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            focusImage.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
-    }
-    
-    @objc func panned(recognizer: UIRotationGestureRecognizer) {
-        if recognizer.state == .began || recognizer.state == .changed {
-           let rotate = Float(recognizer.rotation)
-           self.rotate = rotate
-        }
-    }
-    
-    @objc func pinch(recognizer: UIPinchGestureRecognizer) {
-        if recognizer.state == .changed {
-            let scaleFactor = recognizer.scale
-            scale = SCNVector3(scaleFactor, scaleFactor, scaleFactor)
-        }
-    }
-    
-    @objc func tapped(recognizer: UITapGestureRecognizer) {
-        guard let currentNode = currentNode else { return }
-        guard let query = getRaycastQuery(from: sceneView.center),
-        let result = sceneView.session.raycast(query).first else { return }
-        
-        currentNode.simdTransform = result.worldTransform
-        if let scale = scale {
-            currentNode.scale = scale
-        }
-        if let rotate = rotate {
-            currentNode.eulerAngles.y -= rotate
-        }
-        self.sceneView.scene.rootNode.addChildNode(currentNode)
-        self.currentNode = nil
-    }
-    
-    func loadGeometry(_ result: ARRaycastResult) {
-        guard let currentNode = currentNode else {
-            return
-        }
-        currentNode.simdTransform = result.worldTransform
-        self.sceneView.scene.rootNode.addChildNode(currentNode)
-        self.currentNode = nil
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -130,18 +61,83 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
         removeNotification()
     }
     
-    @IBAction func addButtonTapped(_ sender: Any) {
-        let arAssetListVC = ARAssetListViewController()
-        let navVC = UINavigationController(rootViewController: arAssetListVC)
-        self.present(navVC, animated: true)
+    func setupCoachingView() {
+        sceneView.addSubview(coachingOverlay)
+        coachingOverlay.session = sceneView.session
+        coachingOverlay.delegate = self
+        
+        coachingOverlay.goal = .horizontalPlane
+        coachingOverlay.activatesAutomatically = true
     }
     
-    func addNotification() {
-        NotificationCenter.default.addObserver(self, selector: #selector(addModel), name: NSNotification.Name("addModel"), object: nil)
+    func setupScene() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tapped))
+        let pinchGesture = UIPinchGestureRecognizer(target: self, action: #selector(pinch))
+        let panGesture = UIRotationGestureRecognizer(target: self, action: #selector(panned))
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPress))
+        longPressGesture.minimumPressDuration = 0.1
+        
+        sceneView.addGestureRecognizer(tapGesture)
+        sceneView.addGestureRecognizer(longPressGesture)
+        sceneView.addGestureRecognizer(pinchGesture)
+        sceneView.addGestureRecognizer(panGesture)
+        
+        sceneView.session.delegate = self
+        sceneView.delegate = self
+        sceneView.scene.rootNode.rendererDelegate = self
+        let scene = SCNScene()
+        sceneView.scene = scene
     }
     
-    func removeNotification() {
-        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("addModel"), object: nil)
+    func setupUI() {
+        sceneView.addSubview(focusImage)
+        
+        NSLayoutConstraint.activate([
+            focusImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            focusImage.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
+    
+    // Handler
+    @objc func longPress(recognizer: UILongPressGestureRecognizer) {
+        guard let tempNode = tempNode else { return }
+        let touch = recognizer.location(in: sceneView)
+            
+            if recognizer.state == .began {
+                localTranslate = touch
+            }
+            else if recognizer.state == .changed {
+                let deltaX = Float(touch.x - self.localTranslate.x) / 700
+                let deltaY = Float(touch.y - self.localTranslate.y) / 700
+                
+                tempNode.localTranslate(by: SCNVector3(deltaX, 0.0, deltaY))
+                self.localTranslate = touch
+            }
+    }
+    
+    @objc func panned(recognizer: UIRotationGestureRecognizer) {
+        if recognizer.state == .began || recognizer.state == .changed {
+            let rotate = Float(recognizer.rotation)
+            self.rotate = rotate
+        }
+    }
+    
+    @objc func pinch(recognizer: UIPinchGestureRecognizer) {
+        if recognizer.state == .changed {
+            let scaleFactor = recognizer.scale
+            scale = SCNVector3(scaleFactor, scaleFactor, scaleFactor)
+        }
+    }
+    
+    @objc func tapped(recognizer: UITapGestureRecognizer) {
+        if currentNode != nil && tempNode == nil {
+            attachNode()
+        } else if tempNode == nil {
+            let touch = recognizer.location(in: sceneView)
+            findNode(touch)
+        } else if tempNode != nil {
+            clearNode()
+        }
     }
     
     @objc func addModel(_ notification: Notification) {
@@ -152,8 +148,18 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNNodeRendererDelega
         currentNode = node
     }
     
-    func getRaycastQuery(from point: CGPoint) -> ARRaycastQuery? {
-        return sceneView.raycastQuery(from: point, allowing: .estimatedPlane, alignment: .any)
+    @IBAction func addButtonTapped(_ sender: Any) {
+        let arAssetListVC = ARAssetListViewController()
+        let navVC = UINavigationController(rootViewController: arAssetListVC)
+        self.present(navVC, animated: true)
+    }
+        
+    func addNotification() {
+        NotificationCenter.default.addObserver(self, selector: #selector(addModel), name: NSNotification.Name("addModel"), object: nil)
+    }
+    
+    func removeNotification() {
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("addModel"), object: nil)
     }
 }
 

@@ -20,12 +20,19 @@ class ARAssetListViewController: UIViewController, UICollectionViewDataSource, U
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
-    
+      
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
+        setupSearchBar()
         collectionView.dataSource = self
         collectionView.delegate = self
+    }
+    
+    func setupSearchBar() {
+        let searchController = UISearchController(searchResultsController: nil)
+        searchController.searchBar.placeholder = "Search model"
+        self.navigationItem.searchController = searchController
     }
     
     func setupView() {
